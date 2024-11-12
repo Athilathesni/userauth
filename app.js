@@ -1,18 +1,22 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import bodyParser from 'body-parser';
-import authRoutes from './router.js';
+import express from "express";
+import Router from "./router.js";
+import connection from "./connection.js";
+import dotenv from 'dotenv'
 
-dotenv.config();
+dotenv.config()
 
 const app = express();
 
-app.use(bodyParser.json());  // Parse JSON requests
 
-app.use('/api/auth', authRoutes);  // Authentication routes
+app.use(express.json({limit:"50mb"}));
+app.use(express.static('fontend'));
+app.use('/api', Router);
 
-// Starting the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+
+connection().then(() => {
+    app.listen(process.env.PORT, () => {
+        console.log(`server started at http://localhost:${process.env.PORT}`);
+    });
+}).catch((error) => {
+    console.log(error);
 });

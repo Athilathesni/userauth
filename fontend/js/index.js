@@ -1,61 +1,66 @@
-const apiUrl = 'http://localhost:5000/api/auth';
-
-// Register function
-async function register() {
-  const username = document.getElementById('register-username').value;
-  const password = document.getElementById('register-password').value;
-
-  const response = await fetch(`${apiUrl}/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await response.json();
-  if (response.ok) {
-    alert('Registration successful');
-  } else {
-    alert(data.message);
-  }
-}
-
-// Login function
-async function login() {
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
-
-  const response = await fetch(`${apiUrl}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await response.json();
-  if (response.ok) {
-    localStorage.setItem('token', data.token);
-    showProtectedContent();
-  } else {
-    alert(data.message);
-  }
-}
-
-// Show protected content
-function showProtectedContent() {
-  document.getElementById('protected-content').style.display = 'block';
-  document.getElementById('login-form').style.display = 'none';
-  document.getElementById('register-form').style.display = 'none';
-}
-
-// Logout function
-function logout() {
-  localStorage.removeItem('token');
-  window.location.reload();
-}
-
-// Check token on page load
-window.onload = () => {
-  const token = localStorage.getItem('token');
+async function getUser() {
+  const token = localStorage.getItem("token")
   if (token) {
-    showProtectedContent();
+    const res = await fetch("http://localhost:3000/api/getUser", {
+      headers: { authorization: `Bearer ${token}` },
+    });
+    const movie = await res.json();
+    // console.log(movie);
+    // console.log(movie.usr.name);
+    // console.log(movie.usr.profile);
+
+    document.getElementById("nav-sign").style.display = "none"
+    document.getElementById("nav-sec-2").innerHTML = `
+        <div class="nav-dropdown" id="uname">${movie.usr.name}</div>
+            <div id="profilep" class="profilep">
+                <img src="${movie.usr.profile}" alt="" id="profile-pic" class="profile-pic" width="40" height="40">
+            </div>
+            <div class="dropdown" id="dropdown">
+                <button onclick="myFunction()" class="dropbtn">▼</button>
+                <div id="myDropdown" class="dropdown-content">
+                  <a href="../pages/profile.html">Profile</a>
+                  <a onclick="logoutacc()">Logout</a>
+                </div>
+            </div>
+    `;
+    let str=[]
+    // console.log(movie.data)
+    movie.data.map((data)=>{
+      str += `
+        <a href="./pages/globalPost.html?id=${data._id}">
+                <div class="card">
+                    <div><img
+                            src="${data.pic[0]}"
+                            alt height="250" width="200"></div>
+                    <div>${data.caption} </div>
+                </div>
+            </a>
+      `
+    })
+    document.getElementById('container').innerHTML=str
+  }
+}
+getUser();
+
+function myFunction() {
+  document.getElementById("myDropdown").classList.toggle("show")
+}
+
+window.onclick = function (event) {
+  if (!event.target.matches(".dropbtn")) {
+    var dropdowns = document.getElementsByClassName("dropdown-content")
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains("show")) {
+        openDropdown.classList.remove("show")
+      }
+    }
   }
 };
+
+function logoutacc() {
+  localStorage.removeItem("token")
+  alert("Logout Successfully")
+  window.location.reload()
+}

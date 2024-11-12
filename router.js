@@ -1,12 +1,20 @@
-import express from 'express';
-import { register, login } from './requesthandler.js';
+import { Router } from "express";
 
-const router = express.Router();
+import * as rh from './requesthandler.js'
+import Auth from "./middle/Auth.js";
 
-// Register route
-router.post('/register', register);
+const router=Router();
 
-// Login route
-router.post('/login', login);
+router.route('/adduser').post(rh.adduser)
+router.route('/login').post(rh.login)
+router.route('/getUser').get(Auth,rh.getUser)
+router.route('/getUserDetails/').get(Auth,rh.getUserDetails)
+
+
+
+
+
+
 
 export default router;
+

@@ -1,18 +1,19 @@
-import jwt from 'jsonwebtoken';
+import pkg from 'jsonwebtoken'
+const {verify}=pkg
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-export const authenticateToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  if (!token) {
-    return res.status(403).json({ message: 'Token required' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: 'Invalid token' });
+export default async function Auth(req,res,next) {
+    try{
+        const key=req.headers.authorization
+        if(!key)
+            return res.status(403).send("Unauthorized access")
+        const token=key.split(" ")[1]
+        console.log(token)
+        const auth=await verify(token,process.env.jwt_key)
+        console.log(auth)
+        req.user=auth
+        next()        
+    } catch(error){
+        res.status(500).send(error)
     }
-    req.user = user;
-    next();
-  });
-};
+    
+}
